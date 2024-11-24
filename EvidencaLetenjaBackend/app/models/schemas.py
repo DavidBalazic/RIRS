@@ -1,4 +1,4 @@
-from pydantic import BaseModel, root_validator
+from pydantic import BaseModel
 from typing import Optional
 from datetime import datetime
 
@@ -10,8 +10,9 @@ class LetaloSchema(BaseModel):
     registrska_st: Optional[str] = None
     Polet_idPolet: Optional[int] = None
 
-    class Config:
-        from_attributes = True 
+    model_config = {
+        "from_attributes": True 
+    }
 
 # Pydantic schema for Pilot
 class PilotSchema(BaseModel):
@@ -19,8 +20,9 @@ class PilotSchema(BaseModel):
     ime: str
     priimek: str
 
-    class Config:
-        from_attributes = True
+    model_config = {
+        "from_attributes": True 
+    }
 
 # Pydantic schema for Polet
 class PoletSchema(BaseModel):
@@ -29,7 +31,8 @@ class PoletSchema(BaseModel):
     cas_pristanka: datetime
     Pilot_idPilot: Optional[int] = None
 
-    class Config:
-        from_attributes = True
+    model_config = {
+        "from_attributes": True 
+    }
         
 

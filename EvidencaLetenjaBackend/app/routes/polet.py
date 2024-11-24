@@ -3,9 +3,9 @@ from sqlalchemy.orm import Session
 from sqlalchemy.sql import func
 from datetime import datetime
 from typing import List
-from core.database import get_db
-from models.schemas import PoletSchema
-from models.models import PoletModel
+from app.core.database import get_db
+from app.models.schemas import PoletSchema
+from app.models.models import PoletModel
 
 router = APIRouter()
 
