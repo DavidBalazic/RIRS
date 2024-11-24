@@ -1,20 +1,35 @@
-from pydantic import BaseModel
-from typing import Optional, List
+from pydantic import BaseModel, root_validator
+from typing import Optional
+from datetime import datetime
 
-class Letalo(BaseModel):
-    idLetalo: Optional[int] = None
+# Pydantic schema for Letalo
+class LetaloSchema(BaseModel):
+    idLetalo: int
     ime_letala: Optional[str] = None
     tip: Optional[str] = None
     registrska_st: Optional[str] = None
     Polet_idPolet: Optional[int] = None
 
-class Pilot(BaseModel):
-    idPilot: Optional[int] = None
+    class Config:
+        from_attributes = True 
+
+# Pydantic schema for Pilot
+class PilotSchema(BaseModel):
+    idPilot: int
     ime: str
     priimek: str
 
-class Polet(BaseModel):
-    idPolet: Optional[int] = None
-    cas_vzleta: str  # Stored as text
-    cas_pristanka: str  # Stored as text
-    Pilot_idPilot: Optional[int]
+    class Config:
+        from_attributes = True
+
+# Pydantic schema for Polet
+class PoletSchema(BaseModel):
+    idPolet: int
+    cas_vzleta: datetime
+    cas_pristanka: datetime
+    Pilot_idPilot: Optional[int] = None
+
+    class Config:
+        from_attributes = True
+        
+

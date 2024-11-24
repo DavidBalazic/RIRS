@@ -1,34 +1,32 @@
-from fastapi import APIRouter, HTTPException
-from core.database import get_connection
-from models.schemas import Pilot
+from fastapi import APIRouter, HTTPException, Depends
+from sqlalchemy.orm import Session
+from core.database import get_db
+from models.schemas import PilotSchema
+from models.models import PilotModel
 from typing import List
 
 router = APIRouter()
 
-@router.post("/dodajPilota/", response_model=Pilot)
-def create_pilot(pilot: Pilot):
-    with get_connection() as conn:
-        cursor = conn.cursor()
-        cursor.execute('''
-            INSERT INTO Pilot (ime, priimek) 
-            VALUES (?, ?)''', 
-            (pilot.ime, pilot.priimek))
-        conn.commit()
-        pilot.idPilot = cursor.lastrowid
-    return pilot
+@router.post("/dodajPilota/", response_model=PilotSchema)
+def create_pilot(pilot: PilotSchema, db: Session = Depends(get_db)):
+    new_pilot = PilotModel(ime=pilot.ime, priimek=pilot.priimek)
+    db.add(new_pilot)
+    db.commit()
+    db.refresh(new_pilot)
+    return new_pilot
 
-@router.get("/pridobiPilote/", response_model=List[Pilot])
-def read_pilots():
-    with get_connection() as conn:
-        cursor = conn.cursor()
-        cursor.execute("SELECT * FROM Pilot")
-        rows = cursor.fetchall()
-        return [Pilot(**dict(row)) for row in rows]
+@router.get("/pridobiPilote/", response_model=List[PilotSchema])
+def read_pilots(db: Session = Depends(get_db)):
+    pilots = db.query(PilotModel).all()
+    return pilots
 
 @router.delete("/pilot/{idPilot}", response_model=dict)
-def delete_pilot(idPilot: int):
-    with get_connection() as conn:
-        cursor = conn.cursor()
-        cursor.execute("DELETE FROM Pilot WHERE idPilot = ?", (idPilot,))
-        conn.commit()
+def delete_pilot(idPilot: int, db: Session = Depends(get_db)):
+    pilot = db.query(PilotModel).filter(PilotModel.idPilot == idPilot).first()
+    if not pilot:
+        raise HTTPException(status_code=404, detail="Pilot not found")
+    
+    db.delete(pilot)
+    db.commit()
+    
     return {"message": "Pilot deleted successfully"}
