@@ -1,129 +1,129 @@
-from fastapi import APIRouter, HTTPException
-from core.database import get_connection
-from models.schemas import Polet
-from typing import List
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
+from sqlalchemy.sql import func
 from datetime import datetime
+from typing import List
+from core.database import get_db
+from models.schemas import PoletSchema
+from models.models import PoletModel
 
 router = APIRouter()
 
-@router.post("/dodajPolet/", response_model=Polet)
-def create_polet(polet: Polet):
-    with get_connection() as conn:
-        cursor = conn.cursor()
-        cursor.execute('''
-            INSERT INTO Polet (cas_vzleta, cas_pristanka, Pilot_idPilot) 
-            VALUES (?, ?, ?)''', 
-            (polet.cas_vzleta, polet.cas_pristanka, polet.Pilot_idPilot))
-        conn.commit()
-        polet.idPolet = cursor.lastrowid
-    return polet
+DATE_FORMAT = "%d/%m/%Y %H:%M"
 
-@router.get("/pridobiPolete/", response_model=List[Polet])
-def read_poleti():
-    with get_connection() as conn:
-        cursor = conn.cursor()
-        cursor.execute("SELECT * FROM Polet")
-        rows = cursor.fetchall()
-        return [Polet(**dict(row)) for row in rows]
+@router.post("/dodajPolet/", response_model=PoletSchema)
+def create_polet(polet: PoletSchema, db: Session = Depends(get_db)):
+    try:
+        # Convert datetime objects to strings in the desired format
+        cas_vzleta_str = polet.cas_vzleta.strftime(DATE_FORMAT)
+        cas_pristanka_str = polet.cas_pristanka.strftime(DATE_FORMAT)
+
+        new_polet = PoletModel(
+            cas_vzleta=cas_vzleta_str,
+            cas_pristanka=cas_pristanka_str,
+            Pilot_idPilot=polet.Pilot_idPilot
+        )
+
+        db.add(new_polet)
+        db.commit()
+        db.refresh(new_polet)
+
+        return PoletSchema(
+            idPolet=new_polet.idPolet,
+            cas_vzleta=datetime.strptime(new_polet.cas_vzleta, DATE_FORMAT),
+            cas_pristanka=datetime.strptime(new_polet.cas_pristanka, DATE_FORMAT),
+            Pilot_idPilot=new_polet.Pilot_idPilot
+        )
+
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=f"Invalid datetime format: {e}")
+
+@router.get("/pridobiPolete/", response_model=List[PoletSchema])
+def read_poleti(db: Session = Depends(get_db)):
+    poleti = db.query(PoletModel).all()
+
+    # Return the raw string from the database, with parsing handled in the schema or method
+    return [
+        PoletSchema(
+            idPolet=polet.idPolet,
+            cas_vzleta=datetime.strptime(polet.cas_vzleta, DATE_FORMAT),
+            cas_pristanka=datetime.strptime(polet.cas_pristanka, DATE_FORMAT),
+            Pilot_idPilot=polet.Pilot_idPilot
+        )
+        for polet in poleti
+    ]
 
 @router.delete("/polet/{idPolet}", response_model=dict)
-def delete_polet(idPolet: int):
-    with get_connection() as conn:
-        cursor = conn.cursor()
-        cursor.execute("DELETE FROM Polet WHERE idPolet = ?", (idPolet,))
-        conn.commit()
+def delete_polet(idPolet: int, db: Session = Depends(get_db)):
+    polet = db.query(PoletModel).filter(PoletModel.idPolet == idPolet).first()
+    if not polet:
+        raise HTTPException(status_code=404, detail="Polet not found")
+
+    # Delete the flight (polet)
+    db.delete(polet)
+    db.commit()
+    
+    # Return success message
     return {"message": "Polet deleted successfully"}
 
-@router.get("/pridobiPrihodnjeLete/", response_model=List[Polet])
-def read_poleti_after_date():
-    # Get the current date (resetting time to 00:00)
-    current_date = datetime.now().date()
+@router.get("/pridobiPrihodnjeLete/", response_model=List[PoletSchema])
+def read_poleti_after_date(db: Session = Depends(get_db)):
+    current_date = datetime.now()
+    poleti = db.query(PoletModel).all()
 
-    with get_connection() as conn:
-        cursor = conn.cursor()
-        cursor.execute(
-            """
-            SELECT * FROM Polet 
-            WHERE date(substr(cas_vzleta, 7, 4) || '-' || substr(cas_vzleta, 4, 2) || '-' || substr(cas_vzleta, 1, 2)) >= ?
-            """,
-            (current_date,)
-        )
-
-        poleti = cursor.fetchall()
-
+    # Filter and parse future flights
     return [
-        {
-            "idPolet": row[0],
-            "cas_vzleta": row[1],
-            "cas_pristanka": row[2],
-            "Pilot_idPilot": row[3]
-        }
-        for row in poleti
+        PoletSchema(
+            idPolet=polet.idPolet,
+            cas_vzleta=datetime.strptime(polet.cas_vzleta, DATE_FORMAT),
+            cas_pristanka=datetime.strptime(polet.cas_pristanka, DATE_FORMAT),
+            Pilot_idPilot=polet.Pilot_idPilot
+        )
+        for polet in poleti
+        if datetime.strptime(polet.cas_vzleta, DATE_FORMAT) >= current_date
     ]
 
-@router.get("/pridobiZgodovinoLetov/", response_model=List[Polet])
-def read_poleti_before_date():
-    # Get the current date (resetting time to 00:00)
-    current_date = datetime.now().date()
+@router.get("/pridobiZgodovinoLetov/", response_model=List[PoletSchema])
+def read_poleti_before_date(db: Session = Depends(get_db)):
+    current_date = datetime.now()
+    poleti = db.query(PoletModel).all()
 
-    with get_connection() as conn:
-        cursor = conn.cursor()
-        cursor.execute(
-            """
-            SELECT * FROM Polet 
-            WHERE date(substr(cas_vzleta, 7, 4) || '-' || substr(cas_vzleta, 4, 2) || '-' || substr(cas_vzleta, 1, 2)) < ?
-            """,
-            (current_date,)
-        )
-
-        poleti = cursor.fetchall()
-
+    # Filter and parse past flights
     return [
-        {
-            "idPolet": row[0],
-            "cas_vzleta": row[1],
-            "cas_pristanka": row[2],
-            "Pilot_idPilot": row[3]
-        }
-        for row in poleti
+        PoletSchema(
+            idPolet=polet.idPolet,
+            cas_vzleta=datetime.strptime(polet.cas_vzleta, DATE_FORMAT),
+            cas_pristanka=datetime.strptime(polet.cas_pristanka, DATE_FORMAT),
+            Pilot_idPilot=polet.Pilot_idPilot
+        )
+        for polet in poleti
+        if datetime.strptime(polet.cas_vzleta, DATE_FORMAT) < current_date
     ]
 
-# Še potrebno spremeniti
 @router.put("/poleti/{idPolet}", response_model=dict)
-def update_polet(idPolet: int, polet: Polet):
-    with get_connection() as conn:
-        cursor = conn.cursor()
+def update_polet(idPolet: int, polet: PoletSchema, db: Session = Depends(get_db)):
+    existing_polet = db.query(PoletModel).filter(PoletModel.idPolet == idPolet).first()
 
-        # Fetch the existing flight details
-        cursor.execute("SELECT * FROM Polet WHERE idPolet = ?", (idPolet,))
-        existing_polet = cursor.fetchone()
+    if not existing_polet:
+        raise HTTPException(status_code=404, detail="Polet not found")
 
-        if not existing_polet:
-            raise HTTPException(status_code=404, detail="Polet not found")
+    # Update only provided fields
+    if polet.cas_vzleta:
+        try:
+            # Parse and update cas_vzleta
+            existing_polet.cas_vzleta = datetime.strptime(polet.cas_vzleta, DATE_FORMAT)
+        except ValueError as e:
+            raise HTTPException(status_code=400, detail=f"Invalid cas_vzleta format: {e}")
 
-        # Initialize a list to hold the update parameters
-        update_fields = []
-        update_values = []
+    if polet.cas_pristanka:
+        try:
+            # Parse and update cas_pristanka
+            existing_polet.cas_pristanka = datetime.strptime(polet.cas_pristanka, DATE_FORMAT)
+        except ValueError as e:
+            raise HTTPException(status_code=400, detail=f"Invalid cas_pristanka format: {e}")
 
-        # Check and append the new values for `cas_vzleta` and `cas_pristanka`
-        if polet.cas_vzleta is not None:
-            update_fields.append("cas_vzleta = ?")
-            update_values.append(polet.cas_vzleta)
+    if polet.Pilot_idPilot is not None:
+        existing_polet.Pilot_idPilot = polet.Pilot_idPilot
 
-        if polet.cas_pristanka is not None:
-            update_fields.append("cas_pristanka = ?")
-            update_values.append(polet.cas_pristanka)
-
-        # Only proceed if there are fields to update
-        if update_fields:
-            # Create the SQL statement dynamically
-            sql_update_query = f'''
-                UPDATE Polet
-                SET {', '.join(update_fields)}
-                WHERE idPolet = ?
-            '''
-            update_values.append(idPolet)
-            cursor.execute(sql_update_query, update_values)
-            conn.commit()
-
+    db.commit()
     return {"message": f"Polet with id {idPolet} updated successfully"}
