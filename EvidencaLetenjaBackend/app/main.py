@@ -1,7 +1,7 @@
 import uvicorn as uvicorn
 from fastapi import FastAPI, status
 from fastapi.middleware.cors import CORSMiddleware
-from core.database import initialize_database
+from core.database import engine, Base
 from routes import letalo, pilot, polet
 
 app = FastAPI()
@@ -14,7 +14,7 @@ app.add_middleware(
     allow_headers=["*"],  # Allow all headers
 )
 
-initialize_database()
+Base.metadata.create_all(bind=engine)
 
 app.include_router(polet.router)
 app.include_router(letalo.router)
