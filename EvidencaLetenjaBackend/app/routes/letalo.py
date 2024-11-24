@@ -1,8 +1,8 @@
 from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.orm import Session
-from core.database import get_db
-from models.schemas import LetaloSchema
-from models.models import LetaloModel
+from app.core.database import get_db
+from app.models.schemas import LetaloSchema
+from app.models.models import LetaloModel
 from typing import List
 
 router = APIRouter()

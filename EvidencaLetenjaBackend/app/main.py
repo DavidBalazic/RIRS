@@ -1,8 +1,8 @@
 import uvicorn as uvicorn
 from fastapi import FastAPI, status
 from fastapi.middleware.cors import CORSMiddleware
-from core.database import engine, Base
-from routes import letalo, pilot, polet
+from app.core.database import engine, Base
+from app.routes import letalo, pilot, polet
 
 app = FastAPI()
 
