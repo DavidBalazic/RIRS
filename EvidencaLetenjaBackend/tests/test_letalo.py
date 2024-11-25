@@ -11,7 +11,6 @@ def test_get_letalo(test_db):
 
 def test_create_letalo(test_db):
     new_letalo = {
-        "idLetalo": 0,
         "ime_letala": "string",
         "tip": "string",
         "registrska_st": "string",
@@ -23,7 +22,6 @@ def test_create_letalo(test_db):
 
 def test_update_nonexistent_letalo(test_db):
     update_data = {
-        "idLetalo": 0,
         "ime_letala": "Nonexistent Plane",
         "tip": "Nonexistent Type",
         "registrska_st": "NON123",
@@ -35,7 +33,6 @@ def test_update_nonexistent_letalo(test_db):
     
 def test_update_letalo(test_db):
     update_data = {
-        "idLetalo": 0,
         "ime_letala": "Updated Plane",
         "tip": "Boeing 737",
         "registrska_st": "UPD123",

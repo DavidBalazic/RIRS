@@ -14,7 +14,6 @@ def test_delete_pilot(test_db):
     create_response = client.post(
         "/dodajPilota/",
         json={
-            "idPilot": 0,
             "ime": "Eva",
             "priimek": "Zajec"
         },

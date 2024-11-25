@@ -10,27 +10,25 @@ def test_get_poleti(test_db):
     assert response.status_code == 200
     assert isinstance(response.json(), list)
     
-def test_post_polet(test_db):
+def test_inccorect_dateformat_post_polet(test_db):
     now = datetime.now() 
     new_polet = {
-        "idPolet": 0,
         "cas_vzleta": now.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
         "cas_pristanka": now.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
         "Pilot_idPilot": 1
     }
     response = client.post("/dodajPolet/", json=new_polet)
-    assert response.status_code == 200
+    assert response.status_code == 400
     
-def test_inccorect_dateformat_post_polet(test_db):
+def test_post_polet(test_db):
     now = datetime.now() 
     new_polet = {
-        "idPolet": 0,
         "cas_vzleta": now.strftime("%d/%m/%Y %H:%M"),
         "cas_pristanka": now.strftime("%d/%m/%Y %H:%M"),
         "Pilot_idPilot": 1
     }
     response = client.post("/dodajPolet/", json=new_polet)
-    assert response.status_code == 422
+    assert response.status_code == 200
     
 def test_delete_non_existing_polet(test_db):
     polet_id = 9999 
