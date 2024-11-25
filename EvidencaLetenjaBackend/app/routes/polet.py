@@ -14,40 +14,49 @@ DATE_FORMAT = "%d/%m/%Y %H:%M"
 @router.post("/dodajPolet/", response_model=PoletSchema)
 def create_polet(polet: PoletSchema, db: Session = Depends(get_db)):
     try:
-        # Convert datetime objects to strings in the desired format
-        cas_vzleta_str = polet.cas_vzleta.strftime(DATE_FORMAT)
-        cas_pristanka_str = polet.cas_pristanka.strftime(DATE_FORMAT)
-
-        new_polet = PoletModel(
-            cas_vzleta=cas_vzleta_str,
-            cas_pristanka=cas_pristanka_str,
-            Pilot_idPilot=polet.Pilot_idPilot
+        datetime.strptime(polet.cas_vzleta, DATE_FORMAT)
+    except ValueError:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid format for cas_vzleta. Expected format: {DATE_FORMAT}"
         )
 
-        db.add(new_polet)
-        db.commit()
-        db.refresh(new_polet)
-
-        return PoletSchema(
-            idPolet=new_polet.idPolet,
-            cas_vzleta=datetime.strptime(new_polet.cas_vzleta, DATE_FORMAT),
-            cas_pristanka=datetime.strptime(new_polet.cas_pristanka, DATE_FORMAT),
-            Pilot_idPilot=new_polet.Pilot_idPilot
+    try:
+        datetime.strptime(polet.cas_pristanka, DATE_FORMAT)
+    except ValueError:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid format for cas_pristanka. Expected format: {DATE_FORMAT}"
         )
+        
+    new_polet = PoletModel(
+        cas_vzleta=polet.cas_vzleta,
+        cas_pristanka=polet.cas_pristanka,
+        Pilot_idPilot=polet.Pilot_idPilot,
+    )
 
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=f"Invalid datetime format: {e}")
+    # Add and commit the new entry
+    db.add(new_polet)
+    db.commit()
+    db.refresh(new_polet)
+
+    # Return the created instance as a schema
+    return PoletSchema(
+        idPolet=new_polet.idPolet,
+        cas_vzleta=new_polet.cas_vzleta,
+        cas_pristanka=new_polet.cas_pristanka,
+        Pilot_idPilot=new_polet.Pilot_idPilot,
+    )
 
 @router.get("/pridobiPolete/", response_model=List[PoletSchema])
 def read_poleti(db: Session = Depends(get_db)):
     poleti = db.query(PoletModel).all()
-
     # Return the raw string from the database, with parsing handled in the schema or method
     return [
         PoletSchema(
             idPolet=polet.idPolet,
-            cas_vzleta=datetime.strptime(polet.cas_vzleta, DATE_FORMAT),
-            cas_pristanka=datetime.strptime(polet.cas_pristanka, DATE_FORMAT),
+            cas_vzleta=polet.cas_vzleta,
+            cas_pristanka=polet.cas_pristanka,
             Pilot_idPilot=polet.Pilot_idPilot
         )
         for polet in poleti
@@ -75,8 +84,8 @@ def read_poleti_after_date(db: Session = Depends(get_db)):
     return [
         PoletSchema(
             idPolet=polet.idPolet,
-            cas_vzleta=datetime.strptime(polet.cas_vzleta, DATE_FORMAT),
-            cas_pristanka=datetime.strptime(polet.cas_pristanka, DATE_FORMAT),
+            cas_vzleta=polet.cas_vzleta,
+            cas_pristanka=polet.cas_pristanka,
             Pilot_idPilot=polet.Pilot_idPilot
         )
         for polet in poleti
@@ -92,8 +101,8 @@ def read_poleti_before_date(db: Session = Depends(get_db)):
     return [
         PoletSchema(
             idPolet=polet.idPolet,
-            cas_vzleta=datetime.strptime(polet.cas_vzleta, DATE_FORMAT),
-            cas_pristanka=datetime.strptime(polet.cas_pristanka, DATE_FORMAT),
+            cas_vzleta=polet.cas_vzleta,
+            cas_pristanka=polet.cas_pristanka,
             Pilot_idPilot=polet.Pilot_idPilot
         )
         for polet in poleti
@@ -102,28 +111,20 @@ def read_poleti_before_date(db: Session = Depends(get_db)):
 
 @router.put("/poleti/{idPolet}", response_model=dict)
 def update_polet(idPolet: int, polet: PoletSchema, db: Session = Depends(get_db)):
+    # Fetch the existing flight details
     existing_polet = db.query(PoletModel).filter(PoletModel.idPolet == idPolet).first()
 
     if not existing_polet:
         raise HTTPException(status_code=404, detail="Polet not found")
 
-    # Update only provided fields
-    if polet.cas_vzleta:
-        try:
-            # Parse and update cas_vzleta
-            existing_polet.cas_vzleta = datetime.strptime(polet.cas_vzleta, DATE_FORMAT)
-        except ValueError as e:
-            raise HTTPException(status_code=400, detail=f"Invalid cas_vzleta format: {e}")
+    # Update the fields if new values are provided
+    if polet.cas_vzleta is not None:
+        existing_polet.cas_vzleta = polet.cas_vzleta
 
-    if polet.cas_pristanka:
-        try:
-            # Parse and update cas_pristanka
-            existing_polet.cas_pristanka = datetime.strptime(polet.cas_pristanka, DATE_FORMAT)
-        except ValueError as e:
-            raise HTTPException(status_code=400, detail=f"Invalid cas_pristanka format: {e}")
+    if polet.cas_pristanka is not None:
+        existing_polet.cas_pristanka = polet.cas_pristanka
 
-    if polet.Pilot_idPilot is not None:
-        existing_polet.Pilot_idPilot = polet.Pilot_idPilot
-
+    # Commit the changes only if there are updates
     db.commit()
+
     return {"message": f"Polet with id {idPolet} updated successfully"}
