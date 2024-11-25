@@ -56,13 +56,13 @@
         <div class="grid gap-4 py-4">
             <div class="grid grid-cols-4 items-center gap-4">
                 <Label for="ime_letala" class="text-right">Ime letala</Label>
-                <Input class="col-span-3" bind:value={ime_letala} />
+                <Input class="col-span-3" id="ime_letala" bind:value={ime_letala} />
             </div>
             <div class="grid grid-cols-4 items-center gap-4">
                 <Label for="tip" class="text-right" 
                     >Tip</Label
                 >
-                <Input bind:value={tip} class="col-span-3" />
+                <Input id="tip" bind:value={tip} class="col-span-3" />
             </div>
             <div class="grid grid-cols-4 items-center gap-4">
                 <Label for="registrska" class="text-right">Registrska številka</Label>
