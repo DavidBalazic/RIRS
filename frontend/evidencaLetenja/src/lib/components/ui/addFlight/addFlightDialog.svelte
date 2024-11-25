@@ -52,13 +52,13 @@
         <div class="grid gap-4 py-4">
             <div class="grid grid-cols-4 items-center gap-4">
                 <Label for="cas_vzleta" class="text-right">Čas vzleta</Label>
-                <Datepicker bind:value={cas_vzleta} />
+                <Datepicker id="cas_vzleta" bind:value={cas_vzleta} />
             </div>
             <div class="grid grid-cols-4 items-center gap-4">
                 <Label for="cas_pristanka" class="text-right"
                     >Čas pristanka</Label
                 >
-                <Datepicker bind:value={cas_pristanka} />
+                <Datepicker id="cas_pristanka" bind:value={cas_pristanka} />
             </div>
             <div class="grid grid-cols-4 items-center gap-4">
                 <Label for="id_pilota" class="text-right">ID Pilota</Label>
