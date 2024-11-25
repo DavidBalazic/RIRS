@@ -4,7 +4,7 @@ from datetime import datetime
 
 # Pydantic schema for Letalo
 class LetaloSchema(BaseModel):
-    idLetalo: int
+    idLetalo: Optional[int] = None
     ime_letala: Optional[str] = None
     tip: Optional[str] = None
     registrska_st: Optional[str] = None
@@ -16,7 +16,7 @@ class LetaloSchema(BaseModel):
 
 # Pydantic schema for Pilot
 class PilotSchema(BaseModel):
-    idPilot: int
+    idPilot: Optional[int] = None
     ime: str
     priimek: str
 
@@ -26,9 +26,9 @@ class PilotSchema(BaseModel):
 
 # Pydantic schema for Polet
 class PoletSchema(BaseModel):
-    idPolet: int
-    cas_vzleta: datetime
-    cas_pristanka: datetime
+    idPolet: Optional[int] = None
+    cas_vzleta: str
+    cas_pristanka: str
     Pilot_idPilot: Optional[int] = None
 
     model_config = {
