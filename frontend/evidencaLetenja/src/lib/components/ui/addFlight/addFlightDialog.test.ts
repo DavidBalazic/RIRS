@@ -37,3 +37,11 @@ test('closes dialog on save', async () => {
       Pilot_idPilot: 123,
     });
   });
+
+  test("dialog is closed initially", () => {
+    const { queryByText } = render(AddFlightDialog, {
+        props: { onSave: vi.fn() },
+    });
+
+    expect(queryByText("Nov polet")).not.toBeInTheDocument();
+});

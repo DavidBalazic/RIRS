@@ -44,3 +44,11 @@ test('fills out all fields and saves the plane', async () => {
         Polet_idPolet: 42,
     });
 });
+
+test("dialog is closed initially", () => {
+    const { queryByText } = render(AddPlaneDialog, {
+        props: { onSave: vi.fn() },
+    });
+
+    expect(queryByText("Novo letalo")).not.toBeInTheDocument();
+});
