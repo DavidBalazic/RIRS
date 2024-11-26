@@ -1,0 +1,90 @@
+name: Frontend CI
+
+on:
+  push:
+    branches:
+      - develop
+  pull_request:
+    branches:
+      - develop
+
+jobs:
+  build-frontend:
+    runs-on: ubuntu-latest 
+
+    steps:
+    - name: Checkout code 
+      uses: actions/checkout@v3
+
+    - name: Setup Node.js 
+      uses: actions/setup-node@v3
+      with:
+        node-version: 20
+
+    - name: Cache node_modules 
+      uses: actions/cache@v3
+      with:
+        path: frontend/evidencaLetenja/node_modules
+        key: ${{ runner.os }}-frontend-${{ hashFiles('frontend/evidencaLetenja/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-frontend-
+      # ⚠️ KAKO DELUJE CACHING:
+      # - Ob prvi izvedbi (cache miss) mapa node_modules še ne obstaja -> npm install ustvari mapo node_modules.
+      # - Po zaključku job-a se vsebina node_modules shrani v cache.
+      # - Ob naslednji izvedbi (cache hit) se node_modules obnovi iz cache-a, kar skrajša čas nameščanja odvisnosti.
+
+    - name: Install dependencies
+      run: |
+        cd frontend/evidencaLetenja
+        npm ci
+
+    - name: Build application
+      run: |
+        cd frontend/evidencaLetenja
+        npm run build
+
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: frontend-build
+        path: frontend/evidencaLetenja/.svelte-kit/output/
+
+  test-frontend:
+    needs: build-frontend 
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: 20
+
+    - name: Cache node_modules 
+      uses: actions/cache@v3
+      with:
+        path: frontend/evidencaLetenja/node_modules
+        key: ${{ runner.os }}-frontend-${{ hashFiles('frontend/evidencaLetenja/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-frontend-
+
+    - name: Install dependencies
+      run: |
+        cd frontend/evidencaLetenja
+        npm install
+      # ⚠️ KAKO PREPOZNATI, DA JE CACHE USPEŠEN?
+      # - Če je cache hit, npm install ne namešča novih odvisnosti, ampak preveri obstoječe.
+      # - Če je cache miss, npm install ponovno ustvari mapo node_modules.
+
+    - name: Run tests with coverage
+      run: |
+        cd frontend/evidencaLetenja
+        npm run test:ci
+
+    - name: Upload coverage report
+      uses: actions/upload-artifact@v4
+      with:
+        name: frontend-coverage
+        path: frontend/evidencaLetenja/coverage/

@@ -1,5 +1,5 @@
 import { render, fireEvent, waitFor } from '@testing-library/svelte';
-import AddPlaneDialog from './AddPlaneDialog.svelte';
+import AddPlaneDialog from './addPlaneDialog.svelte';
 
 test('opens dialog on clicking "Dodaj novo letalo"', async () => {
     const { getByText, queryByText } = render(AddPlaneDialog, {
