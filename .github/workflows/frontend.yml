@@ -47,7 +47,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: frontend-build
-        path: frontend/evidencaLetenja/build/
+        path: frontend/evidencaLetenja/dist/
 
   test-frontend:
     needs: build-frontend 
@@ -77,6 +77,11 @@ jobs:
       # ⚠️ KAKO PREPOZNATI, DA JE CACHE USPEŠEN?
       # - Če je cache hit, npm install ne namešča novih odvisnosti, ampak preveri obstoječe.
       # - Če je cache miss, npm install ponovno ustvari mapo node_modules.
+
+    - name: Build application
+      run: |
+        cd frontend/evidencaLetenja
+        npm run build
 
     - name: Run tests with coverage
       run: |
