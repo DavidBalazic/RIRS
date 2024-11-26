@@ -1,5 +1,5 @@
 import { render, fireEvent, screen } from "@testing-library/svelte";
-import EditFlightDialog from "./EditFlightDialog.svelte";
+import EditFlightDialog from "./editFlightDialog.svelte";
 
 test("opens dialog when 'Uredi' button is clicked", async () => {
   render(EditFlightDialog, {
