@@ -1,0 +1,85 @@
+name: Backend CI
+
+on:
+  push:
+    branches:
+      - develop
+  pull_request:
+    branches:
+      - develop
+
+jobs:
+  build-backend:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+         python-version: 3.12
+
+    - name: Cache Python dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('EvidencaLetenjaBackend/requirements.txt') }}  # Ključ za cache
+        restore-keys: |
+          ${{ runner.os }}-pip-
+      # ⚠️ Caching:
+      # - Če cache obstaja (cache hit), se node_modules obnovi, preden se zažene npm install.
+      # - Če cache ne obstaja (cache miss), npm install ponovno ustvari mapo node_modules.
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r EvidencaLetenjaBackend/requirements.txt
+
+    - name: Upload backend artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: backend-build  # Ime artefakta
+        path: |
+          EvidencaLetenjaBackend/
+
+  test-backend:
+    needs: build-backend
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: 3.12
+
+    - name: Cache Python dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('EvidencaLetenjaBackend/requirements.txt') }}  # Ključ za cache
+        restore-keys: |
+          ${{ runner.os }}-pip-
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r EvidencaLetenjaBackend/requirements.txt
+      # ⚠️ Cache hit:
+      # - Če je cache hit, npm install preveri obstoječe odvisnosti in ne namešča ničesar dodatnega.
+      # - Če je cache miss, npm install ponovno ustvari mapo node_modules.
+
+    - name: Run tests with coverage 
+      run: |
+        cd EvidencaLetenjaBackend
+        pytest tests
+
+    - name: Upload coverage report
+      uses: actions/upload-artifact@v4
+      with:
+        name: backend-coverage 
+        path:  EvidencaLetenjaBackend/coverage/
