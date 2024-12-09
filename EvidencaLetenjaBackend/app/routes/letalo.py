@@ -64,3 +64,11 @@ def read_letalo(idLetalo: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Letalo not found")
     
     return letalo
+
+@router.get("/pridobiLetala/{tip}", response_model=List[LetaloSchema])
+def read_letalos_by_tip(tip: str, db: Session = Depends(get_db)):
+    letalos = db.query(LetaloModel).filter(LetaloModel.tip == tip).all()
+    if not letalos:
+        raise HTTPException(status_code=404, detail="No Letala found with the given tip")
+    
+    return letalos

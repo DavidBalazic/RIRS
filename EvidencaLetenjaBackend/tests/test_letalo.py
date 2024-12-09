@@ -1,6 +1,7 @@
 from fastapi.testclient import TestClient
 from app.main import app
 from tests.test_db import test_db
+from app.models.models import LetaloModel
 
 client = TestClient(app)
 
@@ -69,3 +70,23 @@ def test_read_letalo_not_found(test_db):
 def test_read_letalo_invalid_id(test_db):
     response = client.get("/letalo/abc")
     assert response.status_code == 422
+    
+def test_read_letalos_by_tip_existing(test_db):
+    letalo1 = LetaloModel(ime_letala="Boeing 737", tip="Passenger", registrska_st="LJ-1234", Polet_idPolet=1)
+    letalo2 = LetaloModel(ime_letala="Airbus A320", tip="Passenger", registrska_st="LJ-5678", Polet_idPolet=2)
+    test_db.add(letalo1)
+    test_db.add(letalo2)
+    test_db.commit()
+    
+    response = client.get("/pridobiLetala/Passenger")
+    data = response.json()
+    
+    assert response.status_code == 200
+    assert len(data) == 2
+    assert data[0]["ime_letala"] == "Boeing 737"
+    assert data[1]["ime_letala"] == "Airbus A320"
+    
+def test_read_letalos_by_tip_not_found(test_db):
+    response = client.get("/pridobiLetala/Freight")
+    assert response.status_code == 404
+    assert response.json()["detail"] == "No Letala found with the given tip"
