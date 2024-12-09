@@ -55,3 +55,12 @@ def update_letalo(idLetalo: int, letalo: LetaloSchema, db: Session = Depends(get
     db.commit()
     db.refresh(existing_letalo)
     return {"message": f"Letalo with id {idLetalo} updated successfully"}
+
+
+@router.get("/letalo/{idLetalo}", response_model=LetaloSchema)
+def read_letalo(idLetalo: int, db: Session = Depends(get_db)):
+    letalo = db.query(LetaloModel).filter(LetaloModel.idLetalo == idLetalo).first()
+    if not letalo:
+        raise HTTPException(status_code=404, detail="Letalo not found")
+    
+    return letalo
