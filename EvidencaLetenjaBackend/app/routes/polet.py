@@ -128,3 +128,23 @@ def update_polet(idPolet: int, polet: PoletSchema, db: Session = Depends(get_db)
     db.commit()
 
     return {"message": f"Polet with id {idPolet} updated successfully"}
+
+@router.get("/pridobiPoletePilota/{pilot_id}", response_model=List[PoletSchema])
+def read_poleti_for_pilot(pilot_id: int, db: Session = Depends(get_db)):
+    poleti = db.query(PoletModel).filter(PoletModel.Pilot_idPilot == pilot_id).all()
+
+    if not poleti:
+        raise HTTPException(
+            status_code=404,
+            detail=f"No flights found for pilot with ID {pilot_id}"
+        )
+
+    return [
+        PoletSchema(
+            idPolet=polet.idPolet,
+            cas_vzleta=polet.cas_vzleta,
+            cas_pristanka=polet.cas_pristanka,
+            Pilot_idPilot=polet.Pilot_idPilot
+        )
+        for polet in poleti
+    ]
