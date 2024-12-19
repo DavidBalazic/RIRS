@@ -92,7 +92,7 @@ jobs:
   dockerize-and-push-dev:
     needs: test-frontend
     runs-on: ubuntu-latest
-    enviroment: Development
+    environment: Development
     if: github.ref == 'refs/heads/develop'
 
     steps:
