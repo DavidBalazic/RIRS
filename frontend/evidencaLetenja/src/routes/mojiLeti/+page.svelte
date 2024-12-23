@@ -14,8 +14,10 @@
 
     let poleti: Polet[] = [];
 
+    const backendUrl = import.meta.env.VITE_BACKEND_URL
+
     async function fetchFlights() {
-        const response = await fetch(`http://localhost:8000/pridobiPrihodnjeLete/`);
+        const response = await fetch(`${backendUrl}/pridobiPrihodnjeLete/`);
         if (!response.ok) {
             console.error("Failed to fetch flights:", response.statusText);
             return;
@@ -25,7 +27,7 @@
     }
 
     async function deleteFlight(id: number) {
-        const response = await fetch(`http://localhost:8000/polet/${id}`, {
+        const response = await fetch(`${backendUrl}/polet/${id}`, {
             method: "DELETE",
         });
         if (response.ok) {
@@ -59,7 +61,7 @@
         };
 
         try {
-            const response = await fetch("http://localhost:8000/dodajPolet/", {
+            const response = await fetch("${backendUrl}/dodajPolet/", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -83,7 +85,7 @@
         try {
             console.log("updatedFlightData", updatedFlightData.Pilot_idPilot);
             const response = await fetch(
-                `http://localhost:8000/poleti/${updatedFlightData.idPolet}`,
+                `${backendUrl}/poleti/${updatedFlightData.idPolet}`,
                 {
                     method: "PUT",
                     headers: {

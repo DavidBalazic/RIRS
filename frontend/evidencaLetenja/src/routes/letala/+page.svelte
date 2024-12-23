@@ -15,10 +15,12 @@
     };
   
     let planes: Plane[] = [];
+
+    const backendUrl = import.meta.env.VITE_BACKEND_URL
   
     async function getPlanes() {
       try {
-        const response = await fetch("http://localhost:8000/pridobiLetala/");
+        const response = await fetch(`${backendUrl}/pridobiLetala/`);
         if (response.ok) {
             planes = await response.json();
         } else {
@@ -36,7 +38,7 @@
       Polet_idPolet: number;
     }) {
         try {
-            const response = await fetch("http://localhost:8000/dodajLetalo/", {
+            const response = await fetch(`${backendUrl}/dodajLetalo/`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -59,7 +61,7 @@
   
 
     async function deletePlane(id: number) {
-        const response = await fetch(`http://localhost:8000/letalo/${id}`, {
+        const response = await fetch(`${backendUrl}/letalo/${id}`, {
             method: "DELETE",
         });
         if (response.ok) {
