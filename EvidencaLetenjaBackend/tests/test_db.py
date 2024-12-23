@@ -4,7 +4,7 @@ from app.core.database import Base, get_db
 import pytest
 from app.main import app
 
-SQLALCHEMY_DATABASE_URL = "sqlite:///../database/test.db"
+SQLALCHEMY_DATABASE_URL = "sqlite:///./database/test.db"
 
 engine = create_engine(
     SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
