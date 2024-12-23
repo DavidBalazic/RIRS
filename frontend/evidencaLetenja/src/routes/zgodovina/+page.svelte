@@ -3,6 +3,7 @@
   import { Button } from "$lib/components/ui/button";
   import { onMount } from "svelte";
   import EditFlightDialog from "$lib/components/ui/editFlight/editFlightDialog.svelte";
+  import { env } from '$env/dynamic/public';
 
   interface Polet {
     idPolet: number;
@@ -13,7 +14,7 @@
 
   let poleti: Polet[] = [];
 
-  const backendUrl = import.meta.env.VITE_BACKEND_URL
+  const backendUrl = env.PUBLIC_BACKEND_URL
 
   async function fetchFlightsHistory() {
     const response = await fetch(
