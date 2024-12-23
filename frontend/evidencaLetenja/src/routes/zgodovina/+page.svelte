@@ -13,9 +13,11 @@
 
   let poleti: Polet[] = [];
 
+  const backendUrl = import.meta.env.VITE_BACKEND_URL
+
   async function fetchFlightsHistory() {
     const response = await fetch(
-      `http://localhost:8000/pridobiZgodovinoLetov/`,
+      `${backendUrl}/pridobiZgodovinoLetov/`,
     );
 
     if (!response.ok) {
@@ -30,7 +32,7 @@
   async function handleEditSave(updatedFlightData: Polet) {
     try {
       const response = await fetch(
-        `http://localhost:8000/poleti/${updatedFlightData.idPolet}`,
+        `${backendUrl}/poleti/${updatedFlightData.idPolet}`,
         {
           method: "PUT",
           headers: {
@@ -52,7 +54,7 @@
   }
 
   async function deleteFlight(id: number) {
-    const response = await fetch(`http://localhost:8000/polet/${id}`, {
+    const response = await fetch(`${backendUrl}/polet/${id}`, {
       method: "DELETE",
     });
     if (response.ok) {
