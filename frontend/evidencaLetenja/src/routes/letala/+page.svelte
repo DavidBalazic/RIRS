@@ -5,6 +5,7 @@
     import * as Table from "$lib/components/ui/table/index.js";
     import { Cell } from "@/components/ui/calendar";
     import AddPlaneDialog from "$lib/components/ui/addPlane/addPlaneDialog.svelte";
+    import { env } from '$env/dynamic/public';
     
     type Plane = {
       idLetalo: number;
@@ -16,7 +17,7 @@
   
     let planes: Plane[] = [];
 
-    const backendUrl = import.meta.env.VITE_BACKEND_URL
+    const backendUrl = env.PUBLIC_BACKEND_URL
   
     async function getPlanes() {
       try {

@@ -4,6 +4,7 @@
     import AddFlightDialog from "$lib/components/ui/addFlight/addFlightDialog.svelte";
     import EditFlightDialog from "$lib/components/ui/editFlight/editFlightDialog.svelte";
     import { onMount } from "svelte";
+    import { env } from '$env/dynamic/public';
 
     interface Polet {
         idPolet: number;
@@ -14,7 +15,7 @@
 
     let poleti: Polet[] = [];
 
-    const backendUrl = import.meta.env.VITE_BACKEND_URL
+    const backendUrl = env.PUBLIC_BACKEND_URL
 
     async function fetchFlights() {
         const response = await fetch(`${backendUrl}/pridobiPrihodnjeLete/`);
