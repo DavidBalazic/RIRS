@@ -114,3 +114,15 @@ jobs:
         run: |
           docker push ${{ secrets.DOCKER_USERNAME }}/frontend:dev
           docker push ${{ secrets.DOCKER_USERNAME }}/frontend:${{ github.sha }}
+
+  deploy-to-render:
+    needs: [test-frontend, dockerize-and-push-dev]
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Deploy to production
+        uses: johnbeynon/render-deploy-action@v0.0.8
+        with:
+          service-id: ${{ secrets.RENDER_SERVICE_ID }}
+          api-key: ${{ secrets.RENDER_API_KEY }}
+          wait-for-success: true
