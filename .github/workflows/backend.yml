@@ -111,7 +111,7 @@ jobs:
           docker push ${{ secrets.DOCKER_USERNAME }}/backend:${{ github.sha }}
   
   deploy-to-render:
-    needs: [test-frontend, dockerize-and-push-dev]
+    needs: [test-backend, dockerize-and-push-dev]
     runs-on: ubuntu-latest
     
     steps:
