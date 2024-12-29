@@ -5,7 +5,11 @@ import {svelteTesting} from '@testing-library/svelte/vite'
 export default defineConfig({
   plugins: [sveltekit(), svelteTesting()],
   test: {
-	globals: true,
+    coverage: {
+      reporter: ['text', 'lcov'],
+      reportsDirectory: './coverage',
+    },
+	  globals: true,
     environment: 'jsdom',
     setupFiles: ['./vitest-setup.js'],
   },
