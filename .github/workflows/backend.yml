@@ -163,7 +163,7 @@ jobs:
           -Dsonar.python.coverage.reportPaths=coverage.xml
   
   dockerize-and-push-prod:
-    needs: [test-backend, sonarcloud-analysis]
+    needs: test-backend
     runs-on: ubuntu-latest
     environment: 
       name: Production
